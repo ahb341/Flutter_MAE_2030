@@ -1,5 +1,6 @@
 threeMassSystem();
 %threeMassSystem2();
+hello
 %%  10.3.8
 function threeMassSystem()
     p.m  = 1;  p.k = 1;                  
