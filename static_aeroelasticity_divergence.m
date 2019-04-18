@@ -1,3 +1,12 @@
+% Sruti Vutukury, Aaron Brown 
+% MAE 2030, Spring 2019, Extra Credit Project
+% Cornell University
+%
+% Static Aeroelasticity
+% 2 Failure Modes
+% 1) Divergence -- Static instability
+% 2) Control Surface Reversal -- Loss of aerodynamic effectiveness
+clear; clc;
 %% Inputs/Constants
 l = 64.44; c = 14.63; S = c*l; % wing span (m); wing chord (m); % wing area (m^2)
 e = .13*c; % distance from aerodynamic center to elastic axis (m)
@@ -27,7 +36,7 @@ fprintf('Divergence Velocity: %f m/s\n', UD);
 fprintf('Divergence Dynamic Pressure: %f Pa\n', qD);
 fprintf('Divergence Angle of Twist: %f deg\n', alphae*180/pi);
 
-%% Functions
+%% Divergence Function
 function [UD, qD, alphae] = divergence(K_alpha,S,e,q,CLa,rho,alpha0)
 % solving for alphae when My = 0 (assuming C_MAC0 = 0 for simplicity)
 % alphae = (q*S/K_alpha)*(e*CLdot*alpha0)/(1-q*(S*e/K_alpha)*CLdot);
@@ -44,5 +53,6 @@ UD = sqrt(2*qD/rho); % divergence velocity (m/s)
 alphae = (q/qD)*alpha0/(1-q/qD);
 end
 
+%% Control Surface Reversal Function
 function [a, b] = control_reversal()
 end
