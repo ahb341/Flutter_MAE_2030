@@ -1,6 +1,9 @@
 %% Inputs/Constants
 l = 3; c = .5; S = c*l; % wing span (m); wing chord (m); % wing area (m^2)
 e = 0.01; % distance from aerodynamic center to elastic axis (m)
+J = (pi/2)*(c/2)^4; % assuming polar moment of inertia of circular cross section
+G = 24*10^9; % Aluminum (Pa)
+K_alpha = J*G; % torsional spring stiffness (assuming = JG)
 
 rho = 1.225; % air density
 U = 1; % velocity (m/s)
@@ -19,9 +22,10 @@ L = CL*q*S; % lift (N)
 C_MAC = C_MAC0;
 M_AC = C_MAC*q*S*c; % moment about aerodynamic center
 
-K_alpha = 1; % torsional spring stiffness
 My = M_AC + L*e - K_alpha*alphae; % moment about elastic axis or center
-
+[UD, divergence(K_alpha,S,e,q,CLdot,rho,alpha0)
+%% Function
+function [UD, qD, alphae] = divergence(K_alpha,S,e,q,CLdot,rho,alpha0)
 % solving for alphae when My = 0 (assuming C_MAC0 = 0 for simplicity)
 % alphae = (q*S/K_alpha)*(e*CLdot*alpha0)/(1-q*(S*e/K_alpha)*CLdot);
 
@@ -35,6 +39,4 @@ UD = sqrt(2*qD/rho); % divergence velocity (m/s)
 
 % condensed equation for alphae
 alphae = (q/qD)*alpha0/(1-q/qD);
-
-%% Function
-[UD, qD, alphae] = divergence(K_alpha,S,e
+end
