@@ -15,7 +15,7 @@ p.q = 1; p.S = p.b*p.c; p.dCLdal = 2*pi; p.e = 0.1;
 p.Sa = 0;
 
 %% Solve
-tstart = 0; tend = 10; npointspers = 20;
+tstart = 0; tend = 6; npointspers = 50;
 ntimes = tend*npointspers+1; % total number of time points
 t = linspace(tstart,tend,ntimes);
 
@@ -29,8 +29,6 @@ f = @(t,z) simpleFlutterRHS(t,z,p);
 [t,z] = ode45(f, t, z0, options);
 
 h = z(:,1); hd = z(:,2); al = z(:,3); ald = z(:,4);
-minh = min(h); maxh = max(h);
-minal = min(al); maxal = max(al);
 
 %% Plot
 %Initial Airfoil
@@ -38,7 +36,14 @@ afX0 = [-p.c p.c]/2;
 afY0 = [0 0]/2;
 af0 = [afX0;afY0];
 
-fig = figure(1);
+%R = -[cos(al), -sin(al); sin(al), cos(al)];
+%af_new = R*af0;
+
+%Format Figure
+subplot(4,1,1)
+%plot(af_new(1,:),af_new(2,:))
+title('Trajectory of Airfoil'); xlabel('x'); ylabel('y');
+grid on; 
 
 subplot(4,1,2)
 %plot(t,h)
@@ -66,29 +71,21 @@ for i = 1:length(t)
     subplot(4,1,1)
     plot(af_new(1,:), af_new(2,:),'k') %Plot Airfoil
     %plot(0,h(i),'ro','LineWidth',1) %Plot G
-    title('Trajectory of Airfoil'); xlabel('x'); ylabel('y');
-    grid on; axis([-p.c p.c -2 2]);
     
     subplot(4,1,2)
     hold on
-    plot(t(i),h(i),'r.')
-    axis([0 tend minh maxh]);
-    hold off
+    plot(t(i), h(i),'r','LineWidth',1)
     
     subplot(4,1,3)
     hold on
-    plot(t(i),al(i),'g.')
-    axis([0 tend minal maxal]);
-    hold off
+    plot(t(i), al(i),'g','LineWidth',1)
     
     subplot(4,1,4)
     hold on
-    plot(al(i),h(i),'b.')
-    axis([minal maxal minh maxh]);
-    hold off
+    plot(al(i), h(i),'b','LineWidth',1)
     
     pause(.03) %uncomment to animate
-    
+    drawnow();
     if ~ishghandle(fig)
         break
     end
