@@ -5,17 +5,19 @@
 % Dynamic Aeroelasticity
 clear; clc;
 %% Inputs
-p.b = 1; p.c = 1;
+% Geometry
+p.b = 1; p.c = 1; p.S = p.b*p.c; p.e = 0.1;
 
-p.L = 1; p.m = 1; p.Kh = 1; p.Ka = 1; p.Ch = 0; p.Ca = 0;
-p.My = 1; p.Ia = 1;
+% Properties
+p.m = 1; p.Kh = 1; p.Ka = 1; p.Ch = 0.6; p.Ca = 0.4;
+p.My = 1; p.Ia = 1; p.Sa = 0;
 
-% detailed flutter
-p.q = 1; p.S = p.b*p.c; p.dCLdal = 2*pi; p.e = 0.1;
-p.Sa = 0;
+% Aerodynamics
+p.L = 0.5; p.q = 1; p.CLa = 4.2;
+
 
 %% Solve
-tstart = 0; tend = 10; npointspers = 20;
+tstart = 0; tend = 9; npointspers = 30;
 ntimes = tend*npointspers+1; % total number of time points
 t = linspace(tstart,tend,ntimes);
 
@@ -25,7 +27,7 @@ z0 = [h0;hd0;al0;ald0];
 % ODE45
 small = 1e-7;
 options = odeset('RelTol', small, 'AbsTol', small);
-f = @(t,z) simpleFlutterRHS(t,z,p);
+f = @(t,z) detailedFlutterRHS(t,z,p);
 [t,z] = ode45(f, t, z0, options);
 
 h = z(:,1); hd = z(:,2); al = z(:,3); ald = z(:,4);
@@ -35,25 +37,10 @@ minal = min(al); maxal = max(al);
 %% Plot
 %Initial Airfoil
 afX0 = [-p.c p.c]/2;
-afY0 = [0 0]/2;
+afY0 = [-h0 -h0];
 af0 = [afX0;afY0];
 
 fig = figure(1);
-
-subplot(4,1,2)
-%plot(t,h)
-title('h(t)'); xlabel('t'); ylabel('h');
-grid on; %axis equal;
-
-subplot(4,1,3)
-%plot(t,al)
-title('alpha(t)'); xlabel('t'); ylabel('alpha');
-grid on; %axis equal;
-
-subplot(4,1,4)
-%plot(al,h)
-title('h vs alpha'); xlabel('alpha'); ylabel('h');
-grid on; %axis equal;
 
 % plot/animate
 for i = 1:length(t)
@@ -67,24 +54,27 @@ for i = 1:length(t)
     plot(af_new(1,:), af_new(2,:),'k') %Plot Airfoil
     %plot(0,h(i),'ro','LineWidth',1) %Plot G
     title('Trajectory of Airfoil'); xlabel('x'); ylabel('y');
-    grid on; axis([-p.c p.c -2 2]);
+    grid on; axis equal; %axis([-p.c p.c -2 2]);
     
     subplot(4,1,2)
     hold on
     plot(t(i),h(i),'r.')
-    axis([0 tend minh maxh]);
+    title('h(t)'); xlabel('t'); ylabel('h');
+    grid on; axis([0 tend minh maxh]);
     hold off
     
     subplot(4,1,3)
     hold on
     plot(t(i),al(i),'g.')
-    axis([0 tend minal maxal]);
+    title('alpha(t)'); xlabel('t'); ylabel('alpha');
+    grid on; axis([0 tend minal maxal]);
     hold off
     
     subplot(4,1,4)
     hold on
     plot(al(i),h(i),'b.')
-    axis([minal maxal minh maxh]);
+    title('h vs alpha'); xlabel('alpha'); ylabel('h');
+    grid on; axis([minal maxal minh maxh]);
     hold off
     
     pause(.03) %uncomment to animate
@@ -113,14 +103,14 @@ function zdot = detailedFlutterRHS(t,z,p)
 m = p.m; Kh = p.Kh; Ch = p.Ch;
 My = p.My; Ka = p.Ka; Ca = p.Ca; Ia = p.Ia;
 %detailed:
-q = p.q; dCLdal = p.dCLdal; S = p.S; e = p.e;
+q = p.q; CLa = p.CLa; S = p.S; e = p.e;
 
 h = z(1); hd = z(2);
 al = z(3); ald = z(4);
 
 % let Sa = 0
-hdd = (-1/m)*(Kh*h+Ch*hd+q*S*dCLdal*al);
-aldd = (1/Ia)*(q*S*e*dCLdal*al-Ka*al-Ca*ald);
+hdd = (-1/m)*(Kh*h+Ch*hd+q*S*CLa*al);
+aldd = (1/Ia)*(q*S*e*CLa*al-Ka*al-Ca*ald);
 
 zdot = [hd;hdd;ald;aldd];
 end
