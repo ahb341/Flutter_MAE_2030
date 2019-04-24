@@ -5,7 +5,7 @@
 % Dynamic Aeroelasticity
 clear; clc;
 %% Inputs
-p.L = 1; p.m = 1; p.Kh = 1; p.Ka = 1; p.Ch = 1; p.Ca = 1;
+p.L = 1; p.m = 1; p.Kh = 1; p.Ka = 1; p.Ch = 0; p.Ca = 0;
 p.My = 1; p.Ia = 1;
 
 % detailed flutter
@@ -23,7 +23,7 @@ z0 = [h0;hd0;al0;ald0];
 % ODE45
 small = 1e-7; 
 options = odeset('RelTol', small, 'AbsTol', small);
-f = @(t,z) detailedFlutterRHS(t,z,p);
+f = @(t,z) simpleFlutterRHS(t,z,p);
 [t,z] = ode45(f, t, z0, options);
 
 h = z(:,1); hd = z(:,2); al = z(:,3); ald = z(:,4);
