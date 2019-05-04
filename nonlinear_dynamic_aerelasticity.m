@@ -15,13 +15,18 @@ p.My = 1; p.Ia = 1; p.Sa = 0.1;
 % Aerodynamics
 p.L = 0.5; p.CLa = 4.2;
 %p.q = 0.1
-p.q = 0; n = 0.0001;
+p.q = 0.1; n = 0.001;
 A = p.m*p.Ia-p.Sa^2;
 B = p.m*(p.Ka-p.q*p.S*p.e*p.CLa)+p.Kh*p.Ia-p.Sa*p.q*p.S*p.CLa;
-C = 
-while (B^2-4*A*C > 10^-6 || B^2-4*A*C < -10^-6)
-    p.q = p.q + n;
-end
+C = p.Kh*(p.Ka-p.q*p.S*p.e*p.CLa);
+% while (B^2-4*A*C > 10^-1)
+%     B^2-4*A*C
+%     p.q = p.q + n;
+%     A = p.m*p.Ia-p.Sa^2;
+%     B = p.m*(p.Ka-p.q*p.S*p.e*p.CLa)+p.Kh*p.Ia-p.Sa*p.q*p.S*p.CLa;
+%     C = p.Kh*(p.Ka-p.q*p.S*p.e*p.CLa);
+% end
+% p.q
 
 
 %% Solve
@@ -29,7 +34,7 @@ tstart = 0; tend = 3; npointspers = 100;
 ntimes = tend*npointspers+1; % total number of time points
 t = linspace(tstart,tend,ntimes);
 
-h0 = 1; hd0 = 1; al0 = 5*pi/180; ald0 = -1;
+h0 = 0; hd0 = 0; al0 = 5*pi/180; ald0 = -1;
 z0 = [h0;hd0;al0;ald0];
 
 % ODE45
@@ -73,8 +78,8 @@ q = p.q; CLa = p.CLa; S = p.S; e = p.e; Sa = p.Sa;
 
 L = q*S*CLa*al; My = L*e;
 
-aldd = (My-Ka*al+(Sa/m)*(Kh*h+L))/(Ia-Sa^2/m);
-hdd = (-1/m)*(Sa*aldd+Kh*h+L);
+aldd = (My-Ka*al+(Sa/m)*(Kh*h+L*sin(al)))/(Ia-Sa^2/m);
+hdd = (-1/m)*(Sa*aldd+Kh*h+L*sin(al));
 % hdd = (-1/m)*(Kh*h+Ch*hd+q*S*CLa*al);
 % aldd = (1/Ia)*(q*S*e*CLa*al-Ka*al-Ca*ald);
 
