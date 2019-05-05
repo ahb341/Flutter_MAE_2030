@@ -9,7 +9,7 @@ clear; clc;
 p.b = 10; p.c = 1; p.S = p.b*p.c; p.e_ac = 0.1; p.e_cg = 0.1;
 
 % Properties
-p.m = 1; p.Kh = 100; p.Ka = 1000; p.Ch = 0; p.Ca = 0;
+p.m = 1; p.g = 9.81; p.Kh = 100; p.Ka = 1000; p.Ch = 0; p.Ca = 0;
 p.Ia = 1; p.Sa = p.m*p.e_cg;
 
 % Aerodynamics
@@ -57,15 +57,19 @@ h = z(1); hd = z(2);
 al = z(3); ald = z(4);
 alc = z(4); alcd = z(6);
 
-m = p.m; Kh = p.Kh; Ch = p.Ch; Ka = p.Ka; Ca = p.Ca; Ia = p.Ia;
-CLa = p.CLa; S = p.S; e = p.e; Sa = p.Sa; rho = p.rho; v = p.v;
+m = p.m; g = p.g; Kh = p.Kh; Ch = p.Ch; Ka = p.Ka; Ca = p.Ca; Ia = p.Ia;
+CLa = p.CLa; S = p.S; e_ac = p.e_ac; Sa = p.Sa; rho = p.rho; v = p.v;
+e_cg = p.e_cg;
 
-q = (1/2)*rho*sqrt(v^2+hd^2);
+q = (1/2)*rho*sqrt(v^2+hd^2); L = q*S*CLa*al; Mz = L*e_ac*cos(alc);
 
-L = q*S*CLa*al; My = L*e;
+A = (m*Ia/Sa) - Sa; B = -l*((Ia/Sa)+e_ac*cos(alc));
+C = m*g*((Ia/Sa)-e_cg*cos(alc));
 
-aldd = (My-Ka*al+(Sa/m)*(Kh*h+L*sin(al)))/(Ia-Sa^2/m);
-hdd = (-1/m)*(Sa*aldd+Kh*h+L*sin(al));
+hdd = (1/A)*(B+C+D+E+F+G);
+
+% aldd = (My-Ka*al+(Sa/m)*(Kh*h+L*sin(al)))/(Ia-Sa^2/m);
+% hdd = (-1/m)*(Sa*aldd+Kh*h+L*sin(al));
 % hdd = (-1/m)*(Kh*h+Ch*hd+q*S*CLa*al);
 % aldd = (1/Ia)*(q*S*e*CLa*al-Ka*al-Ca*ald);
 
