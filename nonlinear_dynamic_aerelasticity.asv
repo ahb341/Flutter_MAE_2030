@@ -9,16 +9,16 @@ clear; clc;
 p.b = 10; p.c = 1; p.S = p.b*p.c; p.e_ac = 0.1; p.e_cg = 0.1;
 
 % Properties
-p.m = 1; p.Kh = 100; p.Ka = 1000; p.Ch = 0; p.Ca = 0;
+p.m = 1; p.g = 9.81; p.Kh = 100; p.Ka = 1000; p.Ch = 0; p.Ca = 0;
 p.Ia = 1; p.Sa = p.m*p.e_cg;
 
 % Aerodynamics
-p.L = 0.5; p.CLa = 2*pi; p.rho = 1.225; p.v = 1;
+p.CLa = 2*pi; p.rho = 1.225; p.v = 1;
 
-n = 0.001;
-A = p.m*p.Ia-p.Sa^2;
-B = p.m*(p.Ka-p.q*p.S*p.e*p.CLa)+p.Kh*p.Ia-p.Sa*p.q*p.S*p.CLa;
-C = p.Kh*(p.Ka-p.q*p.S*p.e*p.CLa);
+% n = 0.001;
+% A = p.m*p.Ia-p.Sa^2;
+% B = p.m*(p.Ka-p.q*p.S*p.e*p.CLa)+p.Kh*p.Ia-p.Sa*p.q*p.S*p.CLa;
+% C = p.Kh*(p.Ka-p.q*p.S*p.e*p.CLa);
 % while (B^2-4*A*C > 10^-1)
 %     B^2-4*A*C
 %     p.q = p.q + n;
@@ -34,7 +34,16 @@ tstart = 0; tend = 3; npointspers = 100;
 ntimes = tend*npointspers+1; % total number of time points
 t = linspace(tstart,tend,ntimes);
 
-h0 = 0; hd0 = 0; al0 = 5*pi/180; ald0 = -1;
+h0 = 0; hd0 = 0; alc0 = 0; alcd0 = 0;
+al0 = alc0 - atan(-hd0/v); %al0 = 5*pi/180; 
+q = (1/2)*rho*sqrt(v^2+hd^2); L = q*S*CLa*al;
+
+A = (m*Ia/Sa) - Sa; B = -L*((Ia/Sa)+e_ac*cos(alc));
+C = m*g*((Ia/Sa)-e_cg*cos(alc)); D = -(Ia/Sa)*Kh*h;
+E = -(Ia/Sa)*Ch*hd; F = Ka*al; G = Ca*ald;
+
+hdd = (1/A)*(B+C+D+E+F+G);
+ald0 = aldc + -hdd/(v*(1+(hd/v)^2)) %ald0 = -1;
 z0 = [h0;hd0;al0;ald0];
 
 % ODE45
@@ -49,13 +58,14 @@ minal = min(al); maxal = max(al);
 
 %% Plot
 foil_str = 'mh114.xlsx';
-%graph(foil_str,t,al,h,p);
-animate(foil_str,t,al,h,p);
+graph2(foil_str,t,al,h,p);
+%animate2(foil_str,t,al,h,p);
 
+%% RHS
 function zdot = nonLinearFlutterRHS(t,z,p)
 h = z(1); hd = z(2);
 al = z(3); ald = z(4);
-alc = z(4); alcd = z(6);
+alc = z(5); alcd = z(6);
 
 m = p.m; g = p.g; Kh = p.Kh; Ch = p.Ch; Ka = p.Ka; Ca = p.Ca; Ia = p.Ia;
 CLa = p.CLa; S = p.S; e_ac = p.e_ac; Sa = p.Sa; rho = p.rho; v = p.v;
@@ -63,20 +73,24 @@ e_cg = p.e_cg;
 
 q = (1/2)*rho*sqrt(v^2+hd^2); L = q*S*CLa*al; Mz = L*e_ac*cos(alc);
 
-A = (m*Ia/Sa) - Sa; B = -l*((Ia/Sa)+e_ac*cos(alc));
-C = m*g
+A = (m*Ia/Sa) - Sa; B = -L*((Ia/Sa)+e_ac*cos(alc));
+C = m*g*((Ia/Sa)-e_cg*cos(alc)); D = -(Ia/Sa)*Kh*h;
+E = -(Ia/Sa)*Ch*hd; F = Ka*al; G = Ca*ald;
+
 hdd = (1/A)*(B+C+D+E+F+G);
+aldd = (Mz-Ka*al-Ca*ald+m*g*e_cg*cos(alc)-Sa*hdd)/Ia;
+alcdd = aldd + (2*hd/(v^2*(((hd/v)^2)+1)^2))*(hdd/v)^2;
 
 % aldd = (My-Ka*al+(Sa/m)*(Kh*h+L*sin(al)))/(Ia-Sa^2/m);
 % hdd = (-1/m)*(Sa*aldd+Kh*h+L*sin(al));
 % hdd = (-1/m)*(Kh*h+Ch*hd+q*S*CLa*al);
 % aldd = (1/Ia)*(q*S*e*CLa*al-Ka*al-Ca*ald);
 
-zdot = [hd;hdd;ald;aldd];
+zdot = [hd;hdd;ald;aldd;alcd;alcdd];
 end
 
 %% Graph
-function graph(foil_str,t,al,h,p)
+function graph2(foil_str,t,al,h,p)
 minh = min(h); maxh = max(h); minal = min(al); maxal = max(al);
 h0 = h(1);
 %Initial Airfoil
@@ -108,7 +122,7 @@ grid on; axis([minal maxal minh maxh]);
 end
 
 %% Animate
-function animate(foil_str,t,al,h,p)
+function animate2(foil_str,t,al,h,p)
 minh = min(h); maxh = max(h); minal = min(al); maxal = max(al);
 h0 = h(1);
 %Initial Airfoil
