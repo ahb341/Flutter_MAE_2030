@@ -6,25 +6,35 @@
 clear; clc;
 %% Inputs
 % Geometry
-for i = 0:1:100
-    for j = 
-        
-p.b = 1; p.c = 2; p.S = p.b*p.c; p.e = 0.1;
+p.b = 10; p.c = 1; p.S = p.b*p.c; p.e = 0.1;
 
 % Properties
-p.m = 1; p.Kh = 1; p.Ka = 1; p.Ch = 0.5; p.Ca = 0;
-p.My = 1; p.Ia = 1; p.Sa = 0;
+p.m = 1; p.Kh = 100; p.Ka = 1000; p.Ch = 0; p.Ca = 0;
+p.My = 1; p.Ia = 1; p.Sa = 0.1;
 
 % Aerodynamics
-p.L = 0.5; p.q = 1; p.CLa = 4.2;
+p.L = 0.5; p.CLa = 2*pi;
+%p.q = 0.1
+p.q = 0.1; n = 0.001;
+A = p.m*p.Ia-p.Sa^2;
+B = p.m*(p.Ka-p.q*p.S*p.e*p.CLa)+p.Kh*p.Ia-p.Sa*p.q*p.S*p.CLa;
+C = p.Kh*(p.Ka-p.q*p.S*p.e*p.CLa);
+% while (B^2-4*A*C > 10^-1)
+%     B^2-4*A*C
+%     p.q = p.q + n;
+%     A = p.m*p.Ia-p.Sa^2;
+%     B = p.m*(p.Ka-p.q*p.S*p.e*p.CLa)+p.Kh*p.Ia-p.Sa*p.q*p.S*p.CLa;
+%     C = p.Kh*(p.Ka-p.q*p.S*p.e*p.CLa);
+% end
+% p.q
 
 
 %% Solve
-tstart = 0; tend = 3; npointspers = 50;
+tstart = 0; tend = 3; npointspers = 100;
 ntimes = tend*npointspers+1; % total number of time points
 t = linspace(tstart,tend,ntimes);
 
-h0 = 1; hd0 = 1; al0 = 5*pi/180; ald0 = -1;
+h0 = 0; hd0 = 0; al0 = 5*pi/180; ald0 = -1;
 z0 = [h0;hd0;al0;ald0];
 
 % ODE45
@@ -39,12 +49,11 @@ minal = min(al); maxal = max(al);
 
 %% Plot
 foil_str = 'mh114.xlsx';
-graph(foil_str,t,al,h,p);
-%animate(foil_str,t,al,h,p);
+%graph(foil_str,t,al,h,p);
+animate(foil_str,t,al,h,p);
 
 %% Simple Flutter RHS Function
 function zdot = simpleFlutterRHS(t,z,p)
-
 m = p.m; Kh = p.Kh; Ch = p.Ch; L = p.L;
 My = p.My; Ka = p.Ka; Ca = p.Ca; Ia = p.Ia;
 
@@ -59,17 +68,20 @@ end
 
 %% More Detailed Flutter RHS Function
 function zdot = detailedFlutterRHS(t,z,p)
-m = p.m; Kh = p.Kh; Ch = p.Ch;
-My = p.My; Ka = p.Ka; Ca = p.Ca; Ia = p.Ia;
-%detailed:
-q = p.q; CLa = p.CLa; S = p.S; e = p.e;
-
 h = z(1); hd = z(2);
 al = z(3); ald = z(4);
 
-% let Sa = 0
-hdd = (-1/m)*(Kh*h+Ch*hd+q*S*CLa*al);
-aldd = (1/Ia)*(q*S*e*CLa*al-Ka*al-Ca*ald);
+m = p.m; Kh = p.Kh; Ch = p.Ch;
+My = p.My; Ka = p.Ka; Ca = p.Ca; Ia = p.Ia;
+%detailed:
+q = p.q; CLa = p.CLa; S = p.S; e = p.e; Sa = p.Sa;
+
+L = q*S*CLa*al; My = L*e;
+
+aldd = (My-Ka*al+(Sa/m)*(Kh*h+L*sin(al)))/(Ia-Sa^2/m);
+hdd = (-1/m)*(Sa*aldd+Kh*h+L*sin(al));
+% hdd = (-1/m)*(Kh*h+Ch*hd+q*S*CLa*al);
+% aldd = (1/Ia)*(q*S*e*CLa*al-Ka*al-Ca*ald);
 
 zdot = [hd;hdd;ald;aldd];
 end
