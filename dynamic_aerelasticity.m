@@ -36,8 +36,8 @@ minal = min(al); maxal = max(al);
 
 %% Plot
 foil_str = 'mh114.xlsx';
-graph(foil_str,t,al,h,p);
-%animate(foil_str,t,al,h,p);
+%graph(foil_str,t,al,h,p);
+animate(foil_str,t,al,h,p);
 
 %% Simple Flutter RHS Function
 function zdot = simpleFlutterRHS(t,z,p)
