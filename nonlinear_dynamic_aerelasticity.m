@@ -83,7 +83,7 @@ m = p.m; g = p.g; Kh = p.Kh; Ch = p.Ch; Ka = p.Ka; Ca = p.Ca; Ia = p.Ia;
 CLa = p.CLa; S = p.S; e_ac = p.e_ac; Sa = p.Sa; rho = p.rho; v = p.v;
 e_cg = p.e_cg;
 
-q = (1/2)*rho*sqrt(v^2+hd^2); L = q*S*CLa*al; Mz = L*e_ac*cos(alc);
+q = (1/2)*rho*(v^2+hd^2); L = q*S*CLa*al; Mz = L*e_ac*cos(alc);
 
 A = (m*Ia/Sa) - Sa; B = -L*((Ia/Sa)+e_ac*cos(alc));
 C = m*g*((Ia/Sa)-e_cg*cos(alc)); D = -(Ia/Sa)*Kh*h;
