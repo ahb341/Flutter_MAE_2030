@@ -30,7 +30,7 @@ p.CLa = 2*pi; p.rho = 1.225; p.v = 1;
 
 
 %% Solve
-tstart = 0; tend = 4; npointspers = 100;
+tstart = 0; tend = 4; npointspers = 200;
 ntimes = tend*npointspers+1; % total number of time points
 t = linspace(tstart,tend,ntimes);
 
@@ -52,8 +52,8 @@ minalc = min(alc); maxalc = max(alc);
 
 %% Plot
 foil_str = 'naca0012.xlsx';
-%graph2(foil_str,t,p,h,al,alc);
-animate2(foil_str,t,p,h,al,alc);
+graph2(foil_str,t,p,h,al,alc);
+%animate2(foil_str,t,p,h,al,alc);
 %% Functions
 function z0 = getZ0(h0,hd0,alc0,alcd0,p)
 v = p.v; S = p.S; CLa = p.CLa; m = p.m; Ia = p.Ia; Sa = p.Sa;
@@ -92,11 +92,6 @@ E = -(Ia/Sa)*Ch*hd; F = Ka*al; G = Ca*ald;
 hdd = (1/A)*(B+C+D+E+F+G);
 aldd = (Mz-Ka*al-Ca*ald+m*g*e_cg*cos(alc)-Sa*hdd)/Ia;
 alcdd = aldd + (2*hd/(v^2*(((hd/v)^2)+1)^2))*(hdd/v)^2;
-
-% aldd = (My-Ka*al+(Sa/m)*(Kh*h+L*sin(al)))/(Ia-Sa^2/m);
-% hdd = (-1/m)*(Sa*aldd+Kh*h+L*sin(al));
-% hdd = (-1/m)*(Kh*h+Ch*hd+q*S*CLa*al);
-% aldd = (1/Ia)*(q*S*e*CLa*al-Ka*al-Ca*ald);
 
 zdot = [hd;hdd;ald;aldd;alcd;alcdd];
 end
