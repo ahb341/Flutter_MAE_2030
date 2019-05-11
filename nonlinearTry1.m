@@ -11,6 +11,15 @@ close all
 % Geometry
 p.b = 10; p.c = 1; p.S = p.b*p.c; p.e_ac = 0.1; p.e_cg = 0.1;
 
+%iterate over properties
+%m_iter = [0.1,0.5,1,10,100];
+Kh_iter = [0.1,1,10,100,1000];
+%Ka_iter = [0.1,1,10,100,1000,1000];
+Ch_iter = [0,0.1,1,10];
+Ca_iter = [0,0.1,1,10];
+%Ia_iter = [0.1,1,10,100];
+
+
 % Properties
 p.m = 0.5; p.g = 9.81; p.Kh = 100; p.Ka = 1000; p.Ch = 0; p.Ca = 0;
 p.Ia = 1; p.Sa = p.m*p.e_cg;
@@ -33,11 +42,8 @@ p.CLa = 2*pi; p.rho = 1.225; p.v = 1;
 
 
 %% Solve
-<<<<<<< HEAD
 tstart = 0; tend = 2; npointspers = 100;
-=======
 tstart = 0; tend = 4; npointspers = 200;
->>>>>>> 1eff6930a0f8e3d3d319b87acac5621c306f0813
 ntimes = tend*npointspers+1; % total number of time points
 t = linspace(tstart,tend,ntimes);
 
@@ -59,8 +65,8 @@ minalc = min(alc); maxalc = max(alc);
 
 %% Plot
 foil_str = 'naca0012.xlsx';
-graph2(foil_str,t,p,h,al,alc);
-%animate2(foil_str,t,p,h,al,alc);
+%graph2(foil_str,t,p,h,al,alc);
+animate2(foil_str,t,p,h,al,alc);
 %% Functions
 function z0 = getZ0(h0,hd0,alc0,alcd0,p)
 v = p.v; S = p.S; CLa = p.CLa; m = p.m; Ia = p.Ia; Sa = p.Sa;

@@ -4,21 +4,24 @@
 %
 % Dynamic Aeroelasticity
 clear; clc;
+clf
+close all
+
 %% Inputs
 % Geometry
-p.b = 10; p.c = 1; p.S = p.b*p.c; p.e = 0.1;
+p.b = 10; p.c = 1; p.S = p.b*p.c; p.e_ac = 0.1; p.e_cg = 0.1;
 
 % Properties
-p.m = 1; p.g = 9.81; p.Kh = 100; p.Ka = 1000; p.Ch = 0; p.Ca = 0;
-p.My = 1; p.Ia = 1; p.Sa = 0.1;
+p.m = 0.5; p.g = 9.81; p.Kh = 100; p.Ka = 1000; p.Ch = 0; p.Ca = 0;
+p.Ia = 1; p.Sa = p.m*p.e_cg;
 
 % Aerodynamics
-p.L = 0.5; p.CLa = 2*pi;
-%p.q = 0.1
-p.q = 0.1; n = 0.001;
-A = p.m*p.Ia-p.Sa^2;
-B = p.m*(p.Ka-p.q*p.S*p.e*p.CLa)+p.Kh*p.Ia-p.Sa*p.q*p.S*p.CLa;
-C = p.Kh*(p.Ka-p.q*p.S*p.e*p.CLa);
+p.CLa = 2*pi; p.rho = 1.225; p.v = 1;
+
+% n = 0.001;
+% A = p.m*p.Ia-p.Sa^2;
+% B = p.m*(p.Ka-p.q*p.S*p.e*p.CLa)+p.Kh*p.Ia-p.Sa*p.q*p.S*p.CLa;
+% C = p.Kh*(p.Ka-p.q*p.S*p.e*p.CLa);
 % while (B^2-4*A*C > 10^-1)
 %     B^2-4*A*C
 %     p.q = p.q + n;
@@ -30,51 +33,78 @@ C = p.Kh*(p.Ka-p.q*p.S*p.e*p.CLa);
 
 
 %% Solve
-tstart = 0; tend = 3; npointspers = 100;
+tstart = 0; tend = 2; npointspers = 100;
+tstart = 0; tend = 4; npointspers = 200;
 ntimes = tend*npointspers+1; % total number of time points
 t = linspace(tstart,tend,ntimes);
 
-h0 = 0; hd0 = 0; al0 = 5*pi/180; ald0 = -1;
-z0 = [h0;hd0;al0;ald0];
+h0 = 0.1; hd0 = 0.1; alc0 = 5*pi/180; alcd0 = -1;
+z0 = getZ0(h0,hd0,alc0,alcd0,p);
 
 % ODE45
 small = 1e-7;
 options = odeset('RelTol', small, 'AbsTol', small);
-f = @(t,z) detailedFlutterRHS(t,z,p);
+f = @(t,z) nonLinearFlutterRHS(t,z,p);
 [t,z] = ode45(f, t, z0, options);
 
 h = z(:,1); hd = z(:,2); al = z(:,3); ald = z(:,4);
+alc = z(:,1); alcd = z(:,2);
+
 minh = min(h); maxh = max(h);
 minal = min(al); maxal = max(al);
+minalc = min(alc); maxalc = max(alc);
 
 %% Plot
 foil_str = 'naca0012.xlsx';
-%graph(foil_str,t,al,h,p);
-animate(foil_str,t,al,h,p);
+graph2(foil_str,t,p,h,al,alc);
+%animate2(foil_str,t,p,h,al,alc);
+%% Functions
+function z0 = getZ0(h0,hd0,alc0,alcd0,p)
+v = p.v; S = p.S; CLa = p.CLa; m = p.m; Ia = p.Ia; Sa = p.Sa;
+e_ac = p.e_ac; g = p.g; e_cg = p.e_cg; Kh = p.Kh; Ch = p.Ch;
+Ka = p.Ka; Ca = p.Ca; rho = p.rho;
 
-%% More Detailed Flutter RHS Function
-function zdot = detailedFlutterRHS(t,z,p)
+al0 = alc0 - atan(-hd0/v); %al0 = 5*pi/180; 
+
+% Calculate hdd0
+q = (1/2)*rho*sqrt(v^2+hd0^2); L = q*S*CLa*al0;
+A = (m*Ia/Sa) - Sa; B = -L*((Ia/Sa)+e_ac*cos(alc0));
+C = m*g*((Ia/Sa)-e_cg*cos(alc0)); D = -(Ia/Sa)*Kh*h0;
+E = -(Ia/Sa)*Ch*hd0; F = Ka*al0; G = Ca*alcd0; % should be ald0...but it is not defined yet
+hdd0 = (1/A)*(B+C+D+E+F+G);
+
+ald0 = alcd0 + hdd0/(v*(1+(hd0/v)^2)); %ald0 = -1;
+
+z0 = [h0;hd0;al0;ald0;alc0;alcd0];
+end
+
+function zdot = nonLinearFlutterRHS(t,z,p)
 h = z(1); hd = z(2);
 al = z(3); ald = z(4);
+alc = z(5); alcd = z(6);
 
-m = p.m; Kh = p.Kh; Ch = p.Ch;
-My = p.My; Ka = p.Ka; Ca = p.Ca; Ia = p.Ia;
-%detailed:
-q = p.q; CLa = p.CLa; S = p.S; e = p.e; Sa = p.Sa;
+m = p.m; g = p.g; Kh = p.Kh; Ch = p.Ch; Ka = p.Ka; Ca = p.Ca; Ia = p.Ia;
+CLa = p.CLa; S = p.S; e_ac = p.e_ac; Sa = p.Sa; rho = p.rho; v = p.v;
+e_cg = p.e_cg;
 
-L = q*S*CLa*al; My = L*e;
+q = (1/2)*rho*(v^2+hd^2); L = q*S*CLa*al; Mz = L*e_ac*cos(alc);
 
-aldd = (My-Ka*al+(Sa/m)*(Kh*h+L*sin(al)))/(Ia-Sa^2/m);
-hdd = (-1/m)*(Sa*aldd+Kh*h+L*sin(al));
-% hdd = (-1/m)*(Kh*h+Ch*hd+q*S*CLa*al);
-% aldd = (1/Ia)*(q*S*e*CLa*al-Ka*al-Ca*ald);
+A = (m*Ia/Sa) - Sa; B = -L*((Ia/Sa)+e_ac*cos(alc));
+C = m*g*((Ia/Sa)-e_cg*cos(alc)); D = -(Ia/Sa)*Kh*h;
+E = -(Ia/Sa)*Ch*hd; F = Ka*al; G = Ca*ald;
 
-zdot = [hd;hdd;ald;aldd];
+hdd = (1/A)*(B+C+D+E+F+G);
+aldd = (Mz-Ka*al-Ca*ald+m*g*e_cg*cos(alc)-Sa*hdd)/Ia;
+alcdd = aldd + (2*hd/(v^2*(((hd/v)^2)+1)^2))*(hdd/v)^2;
+
+zdot = [hd;hdd;ald;aldd;alcd;alcdd];
 end
 
 %% Graph
-function graph(foil_str,t,al,h,p)
+function graph2(foil_str,t,p,h,al,alc)
 minh = min(h); maxh = max(h); minal = min(al); maxal = max(al);
+minalc = min(alc); maxalc = max(alc);
+
 h0 = h(1);
 %Initial Airfoil
 % afX0 = [-p.c p.c]/2;
@@ -99,14 +129,21 @@ title('alpha(t)'); xlabel('t'); ylabel('alpha');
 grid on; axis([t(1) t(end) minal maxal]);
 
 figure(4);
+plot(t,alc,'y')
+title('alpha_chord(t)'); xlabel('t'); ylabel('alpha_chord');
+grid on; axis([t(1) t(end) minalc maxalc]);
+
+figure(5);
 plot(al,h,'b')
 title('h vs alpha'); xlabel('alpha'); ylabel('h');
 grid on; axis([minal maxal minh maxh]);
 end
 
 %% Animate
-function animate(foil_str,t,al,h,p)
+function animate2(foil_str,t,p,h,al,alc)
 minh = min(h); maxh = max(h); minal = min(al); maxal = max(al);
+minalc = min(alc); maxalc = max(alc);
+
 h0 = h(1);
 %Initial Airfoil
 % afX0 = [-p.c p.c]/2;
@@ -121,7 +158,7 @@ fig = figure(1);
 % plot/animate
 for i = 1:length(t)
     % Create Rotation Matrix
-    R = [cos(-al(i)), -sin(-al(i)); sin(-al(i)), cos(-al(i))];
+    R = [cos(-alc(i)), -sin(-alc(i)); sin(-alc(i)), cos(-alc(i))];
     %Determine Airfiol End-Point Locations
     af_new = R*af0;
     
@@ -148,12 +185,12 @@ for i = 1:length(t)
     
     subplot(4,1,4)
     hold on
-    plot(al(i),h(i),'b.')
-    title('h vs alpha'); xlabel('alpha'); ylabel('h');
-    grid on; axis([minal maxal minh maxh]);
+    plot(t(i),alc(i),'b.')
+    title('alpha_c vs t'); xlabel('t'); ylabel('alpha_c');
+    grid on; axis([t(1) t(end) minalc maxalc]);
     hold off
     
-    pause(.01) %uncomment to animate
+    %pause(.01) %uncomment to animate
     
     if ~ishghandle(fig)
         break
