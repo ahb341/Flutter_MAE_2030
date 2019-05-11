@@ -4,12 +4,15 @@
 %
 % Dynamic Aeroelasticity
 clear; clc;
+clf
+close all
+
 %% Inputs
 % Geometry
 p.b = 10; p.c = 1; p.S = p.b*p.c; p.e = 0.1;
 
 % Properties
-p.m = 1; p.Kh = 100; p.Ka = 1000; p.Ch = 0; p.Ca = 0;
+p.m = 1; p.Kh = 0; p.Ka = 1; p.Ch = 0; p.Ca = 0;
 p.My = 1; p.Ia = 1; p.Sa = 0.1;
 
 % Aerodynamics
@@ -30,11 +33,11 @@ C = p.Kh*(p.Ka-p.q*p.S*p.e*p.CLa);
 
 
 %% Solve
-tstart = 0; tend = 3; npointspers = 100;
+tstart = 0; tend = 1; npointspers = 100;
 ntimes = tend*npointspers+1; % total number of time points
 t = linspace(tstart,tend,ntimes);
 
-h0 = 0; hd0 = 0; al0 = 5*pi/180; ald0 = -1;
+h0 = 1; hd0 = 1; al0 = pi/90; ald0 = -1;
 z0 = [h0;hd0;al0;ald0];
 
 % ODE45

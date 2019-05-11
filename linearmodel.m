@@ -9,7 +9,7 @@ clear; clc;
 p.b = 10; p.c = 1; p.S = p.b*p.c; p.e = 0.1;
 
 % Properties
-p.m = 1; p.Kh = 100; p.Ka = 1000; p.Ch = 0; p.Ca = 0;
+p.m = 1; p.g = 9.81; p.Kh = 100; p.Ka = 1000; p.Ch = 0; p.Ca = 0;
 p.My = 1; p.Ia = 1; p.Sa = 0.1;
 
 % Aerodynamics
@@ -51,20 +51,6 @@ minal = min(al); maxal = max(al);
 foil_str = 'mh114.xlsx';
 %graph(foil_str,t,al,h,p);
 animate(foil_str,t,al,h,p);
-
-%% Simple Flutter RHS Function
-function zdot = simpleFlutterRHS(t,z,p)
-m = p.m; Kh = p.Kh; Ch = p.Ch; L = p.L;
-My = p.My; Ka = p.Ka; Ca = p.Ca; Ia = p.Ia;
-
-h = z(1); hd = z(2);
-al = z(3); ald = z(4);
-
-hdd = (-1/m)*(Kh*h+Ch*hd+L);
-aldd = (1/Ia)*(My-Ka*al-Ca*ald);
-
-zdot = [hd;hdd;ald;aldd];
-end
 
 %% More Detailed Flutter RHS Function
 function zdot = detailedFlutterRHS(t,z,p)
