@@ -51,7 +51,7 @@ minh = min(h); maxh = max(h);
 minal = min(al); maxal = max(al);
 
 %% Plot
-foil_str = 'mh114.xlsx';
+foil_str = 'naca0012.xlsx';
 %graph(foil_str,t,al,h,p);
 animate(foil_str,t,al,h,p);
 
