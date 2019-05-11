@@ -1,8 +1,8 @@
 Kh_iter = [0.1,1,10,100,1000];
-Ch_iter = [0.1,1,10,100,1000];
+Ch_iter = [0.1,1,10,100,100];
 Ca_iter = [0.1,1,10,100,1000];
-Ka_iter = [0.1,1,10,100,1000];
-Ia_iter = [0.1,1,10,100,1000];
+Ka_iter = [0,1,1,10,100,1000,1000];
+Ia_iter = [0.1,1,100,1000,10000];
 %m_iter = [0.1,0.5,1,10,100];
 counter = 0;
 
@@ -20,9 +20,9 @@ for i = 1:length(Kh_iter)
                         p.Kh = Kh_iter(i);
                         p.Ch = Ch_iter(j);
                         p.Ca = Ca_iter(k);
-                        p.Ka = Ka_iter(q);
-                        p.Ia = Ia_iter(r);
                         p.m = 0.5;
+                        p.Ka = Ka_iter(r);
+                        p.Ia = Ia_iter(s);
                         p.Sa = p.m*p.e_cg;
 
                         % Aerodynamics
@@ -56,7 +56,7 @@ for i = 1:length(Kh_iter)
                         graph2(foil_str,t,p,h,al,alc);
                         fprintf('generated fig %d %d %d %d %d',i,j,k,q,r)
                         counter = counter + 1;
-                        filename = ['figure' num2str(counter) '-' num2str(Kh_iter(i)) '-' ...
+                        filename = ['figure' '-' num2str(Kh_iter(i)) '-' ...
                             num2str(Ch_iter(j)) '-' num2str(Ca_iter(k)) '-' ...
                             num2str(Ka_iter(q)) '-' num2str(Ia_iter(r)) '.jpg'];
                         saveas(1,filename)
