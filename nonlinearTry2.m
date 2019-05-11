@@ -1,6 +1,6 @@
-Kh_iter = [1,100,1000];
-Ch_iter = [0.1,1,10];
-Ca_iter = [0.1,1,10];
+Kh_iter = [0.1,1,10,100,1000];
+Ch_iter = [0.1,1,10,100];
+Ca_iter = [0.1,1,10,100,1000];
 
 for i = 1:length(Kh_iter)
     for j = 1:length(Ch_iter)
