@@ -9,8 +9,8 @@ counter = 0;
 for i = 1:length(Kh_iter)
     for j = 1:length(Ch_iter)
       for k = 1:length(Ca_iter)
-          for q = length(Ka_iter)
-              for r = length(Ia_iter)
+          for q = 1:length(Ka_iter)
+              for r = 1:length(Ia_iter)
                   %for s = length(m_iter)
                         %% Inputs
                         % Geometry
