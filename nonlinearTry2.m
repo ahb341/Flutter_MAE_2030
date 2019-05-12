@@ -1,8 +1,10 @@
+clear; clc;
+
 Kh_iter = [0.1,1,10,100,1000];
 Ch_iter = [0.1,1,10,100,1000];
 Ca_iter = [0.1,1,10,100,1000];
 Ka_iter = [0.1,1,10,100,1000];
-Ia_iter = [0.1,1,10,100,1000];
+Ia_iter = [0.1,1,10,100,1000]; Ia_iter = [1];
 %m_iter = [0.1,0.5,1,10,100];
 counter = 0;
 
@@ -29,16 +31,15 @@ for i = 1:length(Kh_iter)
                         p.CLa = 2*pi; p.rho = 1.225; p.v = 1;
 
                         %% Solve
-                        tstart = 0; tend = 2; npointspers = 100;
-                        tstart = 0; tend = 4; npointspers = 200;
+                        tstart = 0; tend = 4; npointspers = 2100;
                         ntimes = tend*npointspers+1; % total number of time points
                         t = linspace(tstart,tend,ntimes);
 
-                        h0 = 0.1; hd0 = 0.1; alc0 = 5*pi/180; alcd0 = -1;
+                        h0 = 1; hd0 = 1; alc0 = pi/90; alcd0 = -1;
                         z0 = getZ0(h0,hd0,alc0,alcd0,p);
 
                         % ODE45
-                        small = 1e-14;
+                        small = 1e-2;
                         options = odeset('RelTol', small, 'AbsTol', small);
                         f = @(t,z) nonLinearFlutterRHS(t,z,p);
                         [t,z] = ode45(f, t, z0, options);
@@ -78,7 +79,7 @@ Ka = p.Ka; Ca = p.Ca; rho = p.rho;
 al0 = alc0 - atan(-hd0/v); %al0 = 5*pi/180; 
 
 % Calculate hdd0
-q = (1/2)*rho*sqrt(v^2+hd0^2); L = q*S*CLa*al0;
+q = (1/2)*rho*v^2+hd0^2; L = q*S*CLa*al0;
 A = (m*Ia/Sa) - Sa; B = -L*((Ia/Sa)+e_ac*cos(alc0));
 C = m*g*((Ia/Sa)-e_cg*cos(alc0)); D = -(Ia/Sa)*Kh*h0;
 E = -(Ia/Sa)*Ch*hd0; F = Ka*al0; G = Ca*alcd0; % should be ald0...but it is not defined yet
@@ -132,22 +133,22 @@ grid on; axis equal;
 subplot(5,1,2)
 plot(t,h,'r')
 title('h(t)'); xlabel('t'); ylabel('h');
-grid on; axis([t(1) t(end) minh maxh]);
+grid on; axis([t(1) t(end) minh-.01 maxh+.01]);
 
 subplot(5,1,3)
 plot(t,al,'g')
 title('alpha(t)'); xlabel('t'); ylabel('alpha');
-grid on; axis([t(1) t(end) minal maxal]);
+grid on; axis([t(1) t(end) minal-.01 maxal+.01]);
 
 subplot(5,1,4)
 plot(t,alc,'y')
 title('alpha_chord(t)'); xlabel('t'); ylabel('alpha_chord');
-grid on; axis([t(1) t(end) minalc maxalc]);
+grid on; axis([t(1) t(end) minalc-.01 maxalc+.01]);
 
 subplot(5,1,5)
 plot(al,h,'b')
 title('h vs alpha'); xlabel('alpha'); ylabel('h');
-grid on; axis([minal maxal minh maxh]);
+grid on; axis([minal-.01 maxal+.01 minh-.01 maxh+.01]);
 end
 
 %% Animate
