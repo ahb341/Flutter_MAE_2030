@@ -13,12 +13,12 @@ p.b = 10; p.c = 1; p.S = p.b*p.c; p.e = 0.1;
 
 % Properties
 p.m = 1; p.Kh = 1000; p.Ka = 1000; p.Ch = 0; p.Ca = 0;
-p.My = 1; p.Ia = 1; p.Sa = 0.1; p.g = 0;
+p.My = 1; p.Ia = 1; p.Sa = 0.1;
 
 % Aerodynamics
 p.L = 0.5; p.CLa = 2*pi;
 %p.q = 0.1
-p.q = 1000; n = 0.001;
+p.q = 0.1; n = 0.001;
 A = p.m*p.Ia-p.Sa^2;
 B = p.m*(p.Ka-p.q*p.S*p.e*p.CLa)+p.Kh*p.Ia-p.Sa*p.q*p.S*p.CLa;
 C = p.Kh*(p.Ka-p.q*p.S*p.e*p.CLa);
@@ -33,7 +33,7 @@ C = p.Kh*(p.Ka-p.q*p.S*p.e*p.CLa);
 
 
 %% Solve
-tstart = 0; tend = 8; npointspers = 100;
+tstart = 0; tend = 4; npointspers = 100;
 ntimes = tend*npointspers+1; % total number of time points
 t = linspace(tstart,tend,ntimes);
 
@@ -41,7 +41,7 @@ h0 = 1; hd0 = 1; al0 = pi/90; ald0 = -1;
 z0 = [h0;hd0;al0;ald0];
 
 % ODE45
-small = 1e-7;
+small = 1e-5;
 options = odeset('RelTol', small, 'AbsTol', small);
 f = @(t,z) detailedFlutterRHS(t,z,p);
 [t,z] = ode45(f, t, z0, options);
@@ -74,7 +74,8 @@ function zdot = detailedFlutterRHS(t,z,p)
 h = z(1); hd = z(2);
 al = z(3); ald = z(4);
 
-m = p.m; Kh = p.Kh; Ch = p.Ch; Ka = p.Ka; Ca = p.Ca; Ia = p.Ia;
+m = p.m; Kh = p.Kh; Ch = p.Ch;
+My = p.My; Ka = p.Ka; Ca = p.Ca; Ia = p.Ia;
 %detailed:
 q = p.q; CLa = p.CLa; S = p.S; e = p.e; Sa = p.Sa;
 
