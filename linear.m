@@ -12,8 +12,8 @@ close all
 p.b = 10; p.c = 1; p.S = p.b*p.c; p.e = 0.1;
 
 % Properties
-p.m = 1; p.Kh = 1000; p.Ka = 1000; p.Ch = 0; p.Ca = 0;
-p.My = 1; p.Ia = 1; p.Sa = 0.1; p.g = 0;
+p.m = 1; p.Kh = 0; p.Ka = 1; p.Ch = 0; p.Ca = 0;
+p.My = 1; p.Ia = 1; p.Sa = 0.1;
 
 % Aerodynamics
 p.L = 0.5; p.CLa = 2*pi;
@@ -33,7 +33,7 @@ C = p.Kh*(p.Ka-p.q*p.S*p.e*p.CLa);
 
 
 %% Solve
-tstart = 0; tend = 8; npointspers = 100;
+tstart = 0; tend = 1; npointspers = 100;
 ntimes = tend*npointspers+1; % total number of time points
 t = linspace(tstart,tend,ntimes);
 
@@ -74,11 +74,12 @@ function zdot = detailedFlutterRHS(t,z,p)
 h = z(1); hd = z(2);
 al = z(3); ald = z(4);
 
-m = p.m; Kh = p.Kh; Ch = p.Ch; Ka = p.Ka; Ca = p.Ca; Ia = p.Ia;
+m = p.m; Kh = p.Kh; Ch = p.Ch;
+My = p.My; Ka = p.Ka; Ca = p.Ca; Ia = p.Ia;
 %detailed:
 q = p.q; CLa = p.CLa; S = p.S; e = p.e; Sa = p.Sa;
 
-L = q*S*CLa*al; My = L*e;
+L = q*S*CLa*al;
 
 aldd = (My-Ka*al+(Sa/m)*(Kh*h+L*sin(al)))/(Ia-Sa^2/m);
 hdd = (-1/m)*(Sa*aldd+Kh*h+L*sin(al));
@@ -169,7 +170,7 @@ for i = 1:length(t)
     grid on; axis([minal maxal minh maxh]);
     hold off
     
-    %pause(.01) %uncomment to animate
+    pause(.01) %uncomment to animate
     
     if ~ishghandle(fig)
         break
